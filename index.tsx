@@ -7,7 +7,7 @@ import QRCode from 'react-qr-code';
 import { Video, Menu, History } from 'lucide-react';
 import Launcher from './Launcher';
 import HosinsulScoreboardApp from './HosinsulScoreboardApp';
-import { TournamentProvider, useTournament } from './context/TournamentContext';
+import { TournamentProvider, useTournament } from './TournamentContext';
 import { GoogleGenAI, Type } from "@google/genai";
 
 // --- Types ---
