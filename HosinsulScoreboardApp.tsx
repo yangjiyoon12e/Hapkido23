@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Peer } from 'peerjs';
 import QRCode from 'react-qr-code';
 import { Menu, History } from 'lucide-react';
-import { useTournament } from './context/TournamentContext';
+import { useTournament } from './TournamentContext';
 
 // --- Types ---
 type PlayerColor = 'red' | 'blue';
