@@ -7,7 +7,7 @@ import QRCode from 'react-qr-code';
 import { Video, Menu, History } from 'lucide-react';
 import Launcher from './Launcher';
 import HosinsulScoreboardApp from './HosinsulScoreboardApp';
-import { TournamentProvider, useTournament } from './TournamentContext';
+import { TournamentProvider, useTournament } from './context/TournamentContext';
 import { GoogleGenAI, Type } from "@google/genai";
 
 // --- Types ---
@@ -1923,40 +1923,51 @@ const ScoreboardApp = () => {
       )}
 
 
-      {/* WINNER CONFIRMATION MODAL */}
+      {/* COMPACT WINNER CONTROL BAR (NO OVERLAY MODAL) */}
       {matchResult && (
-          <div style={styles.modalOverlay}>
-              <div style={{...styles.modalContent, textAlign: 'center', maxWidth: '500px'}}>
-                  <h2 style={{color: '#FFD700', fontSize: '2rem', marginBottom: '20px', borderBottom: '1px solid #444', paddingBottom: '10px'}}>경기 종료 (Match End)</h2>
-                  <div style={{fontSize: '1.8rem', color: '#fff', marginBottom: '20px', fontWeight: 'bold'}}>
-                      {matchResult}
-                  </div>
-                  <p style={{color: '#aaa', marginBottom: '30px', fontSize: '1.1rem'}}>
-                      {matchInfo ? (
-                          <>승자를 대진표에 반영하고<br/>계체 프로그램으로 돌아가시겠습니까?</>
-                      ) : (
-                          <>대진표 정보가 없습니다.<br/>계체 프로그램으로 돌아가시겠습니까?</>
-                      )}
-                  </p>
-                  <div style={{display: 'flex', gap: '15px', justifyContent: 'center'}}>
-                      <button 
-                          onClick={handleConfirmWinner}
-                          style={{...styles.mainActionBtn, background: '#FFD700', color: '#000', padding: '15px 30px', 
-                            borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: 'none'}}
-                      >
-                          {matchInfo ? '승자 확정 및 복귀' : '복귀'}
-                      </button>
-                      <button 
-                          onClick={() => {
-                            setIsManualOverride(true);
-                            setMatchResult(null);
-                          }}
-                          style={{...styles.subActionBtn, padding: '15px 30px', background: '#444', color: '#fff', 
-                            borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: 'none'}}
-                      >
-                          취소 (점수 수정)
-                      </button>
-                  </div>
+          <div style={{
+              position: 'absolute',
+              top: '80px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 100,
+              background: 'rgba(15, 15, 15, 0.95)',
+              border: '2px solid #FFD700',
+              borderRadius: '8px',
+              padding: '12px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '20px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
+              color: '#fff',
+              backdropFilter: 'blur(4px)'
+          }}>
+              <div>
+                  <span style={{fontWeight: 'bold', color: '#FFD700', fontSize: '1.2rem'}}>{matchResult}</span>
+              </div>
+              <div style={{display: 'flex', gap: '10px'}}>
+                  <button 
+                      onClick={handleConfirmWinner}
+                      style={{
+                          background: '#FFD700', color: '#000', padding: '8px 16px', borderRadius: '4px',
+                          fontWeight: 'bold', fontSize: '0.95rem', border: 'none', cursor: 'pointer',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                      }}
+                  >
+                      {matchInfo ? '승자 확정 및 복귀' : '결과 저장'}
+                  </button>
+                  <button 
+                      onClick={() => {
+                        setIsManualOverride(true);
+                        setMatchResult(null);
+                      }}
+                      style={{
+                          background: '#444', color: '#fff', padding: '8px 16px', borderRadius: '4px',
+                          fontWeight: 'bold', fontSize: '0.95rem', border: 'none', cursor: 'pointer'
+                      }}
+                  >
+                      취소 (점수 수정)
+                  </button>
               </div>
           </div>
       )}
@@ -2080,8 +2091,46 @@ const ScoreboardApp = () => {
         <div style={{...styles.playerCard, background: '#E60000'}}>
              {redPlayer.disqualified && <div style={styles.dqOverlay}>실격</div>}
              {/* SCORE DISPLAY: Hidden if Hosinsul and not revealed */}
-             <div style={styles.bigScore}>
-                 {gameMode === 'hosinsul' && !isScoreRevealed ? '0' : redPlayer.score}
+             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
+                 <div style={styles.bigScore}>
+                     {gameMode === 'hosinsul' && !isScoreRevealed ? '0' : redPlayer.score}
+                 </div>
+                 {/* 승패 결과 및 구분 표시 */}
+                 {matchResult && matchResult.includes('홍 승') && (
+                     <div style={{
+                         fontSize: '3rem',
+                         fontWeight: 'bold',
+                         color: '#fff',
+                         textShadow: '0 2px 8px rgba(0,0,0,0.8)',
+                         marginTop: '-20px',
+                         marginBottom: '10px',
+                         background: 'rgba(0,0,0,0.6)',
+                         border: '2px solid #FFD700',
+                         padding: '6px 20px',
+                         borderRadius: '8px',
+                         textAlign: 'center',
+                         zIndex: 2
+                     }}>
+                         홍 승
+                     </div>
+                 )}
+                 {matchResult && matchResult.includes('무승부') && (
+                     <div style={{
+                         fontSize: '3rem',
+                         fontWeight: 'bold',
+                         color: '#aaa',
+                         textShadow: '0 2px 8px rgba(0,0,0,0.8)',
+                         marginTop: '-20px',
+                         marginBottom: '10px',
+                         background: 'rgba(0,0,0,0.6)',
+                         padding: '6px 20px',
+                         borderRadius: '8px',
+                         textAlign: 'center',
+                         zIndex: 2
+                     }}>
+                         무승부
+                     </div>
+                 )}
              </div>
              <div style={styles.playerInfoBox}>
                  <input value={redPlayer.name || ''} onChange={e => setRedPlayer({...redPlayer, name: e.target.value})} style={styles.playerName} placeholder="RED 선수명"/>
@@ -2097,8 +2146,46 @@ const ScoreboardApp = () => {
 
         <div style={{...styles.playerCard, background: '#0047BB'}}>
              {bluePlayer.disqualified && <div style={styles.dqOverlay}>실격</div>}
-             <div style={styles.bigScore}>
-                 {gameMode === 'hosinsul' && !isScoreRevealed ? '0' : bluePlayer.score}
+             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
+                 <div style={styles.bigScore}>
+                     {gameMode === 'hosinsul' && !isScoreRevealed ? '0' : bluePlayer.score}
+                 </div>
+                 {/* 승패 결과 및 구분 표시 */}
+                 {matchResult && matchResult.includes('청 승') && (
+                     <div style={{
+                         fontSize: '3rem',
+                         fontWeight: 'bold',
+                         color: '#fff',
+                         textShadow: '0 2px 8px rgba(0,0,0,0.8)',
+                         marginTop: '-20px',
+                         marginBottom: '10px',
+                         background: 'rgba(0,0,0,0.6)',
+                         border: '2px solid #FFD700',
+                         padding: '6px 20px',
+                         borderRadius: '8px',
+                         textAlign: 'center',
+                         zIndex: 2
+                     }}>
+                         청 승
+                     </div>
+                 )}
+                 {matchResult && matchResult.includes('무승부') && (
+                     <div style={{
+                         fontSize: '3rem',
+                         fontWeight: 'bold',
+                         color: '#aaa',
+                         textShadow: '0 2px 8px rgba(0,0,0,0.8)',
+                         marginTop: '-20px',
+                         marginBottom: '10px',
+                         background: 'rgba(0,0,0,0.6)',
+                         padding: '6px 20px',
+                         borderRadius: '8px',
+                         textAlign: 'center',
+                         zIndex: 2
+                     }}>
+                         무승부
+                     </div>
+                 )}
              </div>
              <div style={styles.playerInfoBox}>
                  <input value={bluePlayer.name || ''} onChange={e => setBluePlayer({...bluePlayer, name: e.target.value})} style={styles.playerName} placeholder="BLUE 선수명"/>
