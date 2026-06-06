@@ -1758,7 +1758,8 @@ const ScoreboardApp = () => {
                       
                       <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(130px, 1fr))', gap:'12px', justifyContent:'center'}}>
                         {[1, 2, 3, 4, 5].map(id => {
-                            const qrUrl = `${window.location.origin}/scoreboard?v=judge&h=${myPeerId}&j=${id}`;
+                            const qrOrigin = window.location.origin.replace('-dev-', '-pre-');
+                            const qrUrl = `${qrOrigin}/scoreboard?v=judge&h=${myPeerId}&j=${id}`;
                             return (
                                 <div key={id} style={{
                                     background: '#111', padding: '15px 5px', borderRadius: '8px', 
