@@ -7,7 +7,7 @@ import QRCode from 'react-qr-code';
 import { Video, Menu, History } from 'lucide-react';
 import Launcher from './Launcher';
 import HosinsulScoreboardApp from './HosinsulScoreboardApp';
-import { TournamentProvider, useTournament } from './context/TournamentContext';
+import { TournamentProvider, useTournament } from './TournamentContext';
 import { GoogleGenAI, Type } from "@google/genai";
 
 // --- Types ---
@@ -598,6 +598,7 @@ const ScoreboardApp = () => {
     if (gameMode === 'sparring' && isResting) {
       if (restTimeLeft <= 0) {
           setIsResting(false);
+          playBuzzer('stop'); // 휴식이나 판정이 끝나면 부저 재생
       } else {
           interval = window.setInterval(() => {
             setRestTimeLeft((prev) => {
@@ -673,6 +674,41 @@ const ScoreboardApp = () => {
   // --- Time Limit Decision (Sparring Only) ---
   useEffect(() => {
       if (gameMode === 'sparring' && timeLeft === 0 && !matchResult) {
+          const isTie = redPlayer.score === bluePlayer.score &&
+                        redPlayer.kyonggo === bluePlayer.kyonggo &&
+                        redPlayer.gamjeom === bluePlayer.gamjeom;
+
+          if (isTie) {
+              // 1. 2-minute mode, Round 1 tie -> jumps directly to Round 3 (Golden Point) and start rest
+              if (roundDuration === 120 && currentRound === 1) {
+                  setCurrentRound(3);
+                  setIsResting(true);
+                  setTimerMode('rest');
+                  setRestTimeLeft(300); // 30 seconds limit deciseconds
+                  addLog("1회전 동점: 3회전(선득점제) 자동 진입 및 휴식 시작");
+                  return;
+              }
+              // 2. 1-minute mode, Round 1 tie -> goes to Round 2 and start rest
+              if (roundDuration === 60 && currentRound === 1) {
+                  setCurrentRound(2);
+                  setTimeLeft(600); // Set next round time to 1 minute
+                  setIsResting(true);
+                  setTimerMode('rest');
+                  setRestTimeLeft(300); // 30 seconds
+                  addLog("1회전 동점: 2회전 자동 진입 및 휴식 시작");
+                  return;
+              }
+              // 3. 1-minute mode, Round 2 tie -> jumps to Round 3 (Golden Point) and start rest
+              if (roundDuration === 60 && currentRound === 2) {
+                  setCurrentRound(3);
+                  setIsResting(true);
+                  setTimerMode('rest');
+                  setRestTimeLeft(300); // 30 seconds
+                  addLog("2회전 동점: 3회전(선득점제) 자동 진입 및 휴식 시작");
+                  return;
+              }
+          }
+
           // Auto decision for 2-minute mode, Round 2 or Sudden Death (Round 3)
           if ((roundDuration === 120 && currentRound === 2) || currentRound === 3) {
               determineWinner("경기 종료");
